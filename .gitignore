@@ -30,6 +30,8 @@ hs_err_pid*
 /.idea/workspace.xml
 .DS_Store
 /build
+/app/release
+/app/debug
 /captures
 .externalNativeBuild
 *.iws

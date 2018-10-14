@@ -30,7 +30,7 @@ class MainActivity : Activity(), GestureDelegate {
             activityManager.getMemoryInfo(memoryInfo)
 
             // For low memory devices we create tiles bigger, so we get less tiles and less memory load
-            var reduceFactor = 1.3
+            var reduceFactor = 1.0
             val totalRam = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 memoryInfo.totalMem / (1024 * 1024)
             } else {
@@ -38,7 +38,7 @@ class MainActivity : Activity(), GestureDelegate {
             }
 
             if(totalRam < 1024) {
-                reduceFactor = 2.7
+                reduceFactor = 2.0
             }
 
             val options = mapOf(
@@ -63,6 +63,40 @@ class MainActivity : Activity(), GestureDelegate {
             }
 
             mapView.freeze = false
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        val map = mapRef?.get()
+        if(map != null) {
+            map.save()
+            map.close()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+
+        val mapView = findViewById<MapView>(R.id.mapView)
+        if(mapView != null && outState != null) {
+            outState.putDouble("map_scale", mapView.mapScale)
+            val mapCenter = mapView.mapCenter
+            outState.putDouble("map_center_x", mapCenter.x)
+            outState.putDouble("map_center_y", mapCenter.y)
+        }
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        val mapView = findViewById<MapView>(R.id.mapView)
+        if(mapView != null && savedInstanceState != null) {
+            val mapCenterX = savedInstanceState.getDouble("map_center_x", 0.0)
+            val mapCenterY = savedInstanceState.getDouble("map_center_y", 0.0)
+
+            mapView.mapScale = savedInstanceState.getDouble("map_scale", 0.0000015)
+            mapView.mapCenter = Point(mapCenterX, mapCenterY)
         }
     }
 
